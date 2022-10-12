@@ -143,3 +143,32 @@ print(paste0(colu, nchar(colu))) #colu represents the columnnames in this loop. 
 colours_vector <- c("red", "orange", "purple", "yellow", "pink", "blue")
 four <- ifelse(nchar(colours_vector) == 4, colours_vector , "not4letters")
 print(four)
+
+
+########################################################################################
+#Exercise 7 - apply
+#1. Create a numeric vector of length 10. Write an lapply and sapply statement to square each element. Compare the two outputs.
+
+numeric_vector <- c(1:10) #creating the numeric vector
+numeric_vector
+
+lapply(numeric_vector, function(x) x ^ 2) #creating a function which will square each element of the list
+
+sapply(numeric_vector, function(x) x ^ 2)
+
+#2. Generate a list of length 4 containing both numeric and logical (T/F) vectors. Write an lapply or sapply statement to calculate the sum of
+#the elements in each vector.
+
+list_four <- list(8, 24, TRUE, FALSE)
+list_four
+
+lapply(list_four, sum)
+sapply(list_four, sum)
+
+#3. Write a sapply statement to repeat each element of each vector in your list three times e.g. 1, 4, 3 would become 1, 1, 1, 4, 4, 4, 3, 3, 3.
+#Assign the output to a new list.
+
+numeric_vector_triple <- list(sapply(numeric_vector, function(i) rep(i, each=3)))
+typeof(numeric_vector_triple)
+numeric_vector_triple
+
