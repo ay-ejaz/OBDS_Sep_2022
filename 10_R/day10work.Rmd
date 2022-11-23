@@ -1,0 +1,147 @@
+---
+title: "day10work"
+author: "Ayesha Ejaz"
+date: '2022-10-21'
+output: html_document
+---
+This is the pathway analysis practical of the OBDS course 
+- The first part of this pracical is using gprofiler to perform ORA on output dataset of differentially expressed genes from DESeq2
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# load packages
+# load librarys
+
+library(tidyverse)
+library(gprofiler2)
+```
+
+# Read in our tables from this morning in a new Rmd file
+```{r}
+# read in files from this morning
+# 1. all results (this was filtered to remove non DE genes in our DESeq2 list so only contains genes expressed in our samples) -> call this table 'all_genes_df'  - this will be our background
+
+all_genes_df <- read_csv('CD8_vs_CD4_DE_results_lfcshrinkage_allgenes.csv')
+dim(all_genes_df)
+
+#filter out the genes which padj is NA - this will not be present in the up/downregulated files which will all have a pvalue.
+all_genes_df_filtered <- all_genes_df %>% filter(!is.na(padj))
+dim(all_genes_df_filtered)
+
+# 2. all significant upregulated genes -> call this upreg_genes_df
+upreg_genes_df <- read_csv('CD8_vs_CD4_DKO_DE_results_lfcshrinkage_0.05_log2FC1_up.csv')
+dim(upreg_genes_df)
+
+# 3. all significant down regulated genes -> call this downreg_genes_df 
+downreg_genes_df <- read_csv('CD8_vs_CD4_DKO_DE_results_lfcshrinkage_0.05_log2FC1_down.csv')
+dim(downreg_genes_df)
+
+# Check the dimensions of each of your dataframes using dim()
+# upreg_genes_df should be 915
+# downreg_genes_df should be 1204
+# all_genes_df_filtered should be 17729
+
+```
+Now we want a vector of gene ids to use for analysis 
+
+```{r}
+# from each of these dataframes get a vector of the ensembl ids 
+all_gene_ids <- all_genes_df_filtered$ensembl_gene_id
+    
+upreg_gene_ids <- upreg_genes_df$ensembl_gene_id
+    
+downreg_gene_ids <- downreg_genes_df$ensembl_gene_id
+class(downreg_gene_ids)
+```
+
+#Perform ORA using g:profiler 
+
+1. Look at documentation - https://cran.r-project.org/web/packages/gprofiler2/vignettes/gprofiler2.html
+```{r}
+# use the gost() function - what paramters should we include/change 
+# we want to test the ORA of upreg_gene_ids vs our all_gene_ids
+
+# get help for function
+?gost() 
+
+# write query and assign to output variable named `gost_results_obj`
+
+gost_results_obj <- gost(query = upreg_gene_ids, organism = "mmusculus",
+                         ordered_query = FALSE, multi_query = FALSE,
+                         significant = TRUE, exclude_iea = TRUE,
+                         measure_underrepresentation = FALSE,
+                         evcodes = FALSE, user_threshold = 0.01,
+                         correction_method = "g_SCS",
+                         domain_scope = "custom", 
+                         custom_bg = all_gene_ids,
+                         sources = NULL,
+                         as_short_link = FALSE)
+
+# what are our outputs  
+names(gost_results_obj)
+
+```
+
+```{r}
+# plot our results using in built function in gprofiler -> which one is it? 
+
+gostplot(gost_results_obj, capped = TRUE, interactive = FALSE)
+
+
+```
+
+```{r}
+# what does as_short_link = FALSE do in gost() function? 
+gost_results_obj_link <- gost(query = upreg_gene_ids, organism = "mmusculus",
+                         ordered_query = FALSE, multi_query = FALSE,
+                         significant = TRUE, exclude_iea = TRUE,
+                         measure_underrepresentation = FALSE,
+                         evcodes = FALSE, user_threshold = 0.01,
+                         correction_method = "g_SCS",
+                         domain_scope = "custom", 
+                         custom_bg = all_gene_ids,
+                         sources = NULL,
+                         as_short_link = TRUE)
+
+gost_results_obj_link
+```
+
+Answer -> outputs a weblink that can be used to interact with the data and shows a plot
+
+```{r}
+# Filter results table for genesets with between 5-300 genes 
+
+gost_results_obj$result
+
+```
+
+
+2. Try querying multiple gene lists at the same time (up and down regulated genes) using Multiple queries - see the documentation 
+
+```{r}
+
+```
+
+Can you plot these querys together?
+
+```{r}
+
+
+```
+
+Output the get_version_info() to save the versions of the databases that were used for the analysis!! 
+```{r}
+get_version_info(organism= 'mmusculus') #to look at version of gprofiler
+
+sessionInfo() #to get R version and packages used
+```
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+ 
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
